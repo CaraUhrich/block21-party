@@ -6,6 +6,7 @@ const state = {
 //Query selectors for ul id partyList
 const partyDisplay =  document.querySelector('#partyList')
 
+
 //Function calls
 initRender()
 
@@ -34,7 +35,12 @@ function render () {
         const description = document.createElement('p')
         description.textContent = partyObj.description
 
-        artistEl.replaceChildren(name, date, location, description)
+        const deleteBtn = document.createElement('button')
+        deleteBtn.textContent = 'Delete'
+        
+        deleteBtn.addEventListener('click', deleteEvent)
+
+        artistEl.replaceChildren(name, date, location, description, deleteBtn)
 
         return artistEl
     })
@@ -42,7 +48,7 @@ function render () {
     partyDisplay.replaceChildren(...partyEls)
 }
 
-// Async function to pull /events from https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events
+//Async function to pull /events from https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events
 async function getEvents() {
     try {
         const response = await fetch('https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events')
@@ -57,16 +63,25 @@ async function getEvents() {
 //function to parse date and time to be more readable
 function getDateStr(inputStr) {
     //inputStr in the format 2023-08-20T23:40:08.000Z
-    let date = ''
-    let time = ''
+    let date = inputStr.slice(0, 10)
+    let time = inputStr.slice(11, 19)
 
-    for (let i = 0; i < 10; i++) {
-        date += inputStr[i]
-    }
-
-    for (let i = 11; i < 19; i++) {
-        time += inputStr[i]
-    }
-    
     return `Date: ${date} Time: ${time}`
+}
+
+function deleteEvent(e) {
+    e.preventDefault()
+
+    const partyToDeleteNameDisplay = e.target.parentElement.firstChild
+
+    const partyToDelete = state.parties.find((partyObj, index) => {
+        if (partyObj.name === partyToDeleteNameDisplay.textContent){
+            state.parties.splice(index, 1)
+            return true
+        }
+        })
+
+    console.log(partyToDelete)
+
+    render()
 }

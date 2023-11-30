@@ -3,12 +3,14 @@ const state = {
     parties: []
 }
 
-//Query selectors for ul id partyList
+//Query selectors and global variable
 const partyDisplay =  document.querySelector('#partyList')
-
+const inputForm = document.querySelector('form')
+const API = 'https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events'
 
 //Function calls
 initRender()
+inputForm.addEventListener('submit', addEvent)
 
 // Inital render function to await getEvents before rendering
 async function initRender() {
@@ -26,8 +28,10 @@ function render () {
         name.textContent = partyObj.name
 
         const date = document.createElement('p')
-        date.textContent = getDateStr(partyObj.date)
+        date.textContent = `Date: ${parseDate(partyObj.date, 'date')}`
         
+        const time = document.createElement('p')
+        time.textContent = `Time: ${parseDate(partyObj.date, 'time')}`
 
         const location = document.createElement('p')
         location.textContent = `Location: ${partyObj.location}`
@@ -40,7 +44,7 @@ function render () {
         
         deleteBtn.addEventListener('click', deleteEvent)
 
-        artistEl.replaceChildren(name, date, location, description, deleteBtn)
+        artistEl.replaceChildren(name, date, time, location, description, deleteBtn)
 
         return artistEl
     })
@@ -51,7 +55,7 @@ function render () {
 //Async function to pull /events from https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events
 async function getEvents() {
     try {
-        const response = await fetch('https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events')
+        const response = await fetch(API)
         const responseObj = await response.json()
 
         state.parties = responseObj.data
@@ -61,21 +65,24 @@ async function getEvents() {
 }
 
 //function to parse date and time to be more readable
-function getDateStr(inputStr) {
+function parseDate(inputStr, expectedOutput) {
     //inputStr in the format 2023-08-20T23:40:08.000Z
-    let date = inputStr.slice(0, 10)
-    let time = inputStr.slice(11, 19)
-
-    return `Date: ${date} Time: ${time}`
+    if (expectedOutput === 'date') {
+        return inputStr.slice(0, 10)
+    } else if (expectedOutput === 'time') {
+        return inputStr.slice(11, 19)
+    } else {
+        return 'invalid expected Output'
+    }
 }
 
 function deleteEvent(e) {
     e.preventDefault()
 
-    const partyToDeleteNameDisplay = e.target.parentElement.firstChild
+    const partyToDeleteName = e.target.parentElement.firstChild
 
     const partyToDelete = state.parties.find((partyObj, index) => {
-        if (partyObj.name === partyToDeleteNameDisplay.textContent){
+        if (partyObj.name === partyToDeleteName.textContent){
             state.parties.splice(index, 1)
             return true
         }
@@ -84,4 +91,35 @@ function deleteEvent(e) {
     console.log(partyToDelete)
 
     render()
+}
+
+async function addEvent(e) {
+    e.preventDefault()
+
+    const date = formatDate(inputForm.dateInput.value, inputForm.time.value)
+
+    try {
+        const response = await fetch(API, {
+            method: 'Post',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: inputForm.name.value,
+                description: inputForm.description.value,
+                date: date,
+                location: inputForm.location.value
+            })
+        })
+
+        if (!response.ok) {
+            throw new Error('Failed to add event')
+        } else {
+            render()
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+function formatDate(date, time) {
+    return date + 'T' + time + ':00.000Z'
 }

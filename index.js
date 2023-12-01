@@ -17,7 +17,7 @@ async function render () {
     await getEvents()
     
     const partyEls = state.parties.map((partyObj) => {
-        const artistEl = document.createElement('li')
+        const partyEl = document.createElement('li')
 
         //partyObj keys are name, location, description, date (includes date and time 'yyyy-mm-ddThh:mm:ss:mmmz'), and id
         const name = document.createElement('h3')
@@ -40,9 +40,9 @@ async function render () {
         
         deleteBtn.addEventListener('click', () => deleteEvent(partyObj.id))
 
-        artistEl.replaceChildren(name, date, time, location, description, deleteBtn)
+        partyEl.replaceChildren(name, date, time, location, description, deleteBtn)
 
-        return artistEl
+        return partyEl
     })
 
     partyDisplay.replaceChildren(...partyEls)
@@ -58,39 +58,6 @@ async function getEvents() {
     } catch (error) {
         console.log(error)
     }
-}
-
-//function to parse date and time to be more readable
-function parseDate(inputStr, expectedOutput) {
-    //inputStr in the format 2023-08-20T23:40:08.000Z
-    if (expectedOutput === 'date') {
-        return inputStr.slice(0, 10)
-    } else if (expectedOutput === 'time') {
-        return inputStr.slice(11, 19)
-    } else {
-        return 'invalid expected Output'
-    }
-}
-
-async function deleteEvent(id) {
-    console.log(state.parties.length)
-    console.log(id)
-    try{
-        const response = await fetch(`${API}/${id}`, {
-            method: "DELETE",
-        })
-        console.log(response)
-
-        if (!response.ok) {
-            throw new Error("failed to delete event")
-        }
-
-        render()
-    } catch (error) {
-        console.log(error)
-    }
-
-    console.log(state.parties.length)
 }
 
 async function addEvent(e) {
@@ -112,14 +79,43 @@ async function addEvent(e) {
 
         if (!response.ok) {
             throw new Error('Failed to add event')
-        } else {
-            render()
         }
+
+        render()
     } catch (error) {
         console.log(error)
     }
 }
 
+async function deleteEvent(id) {
+    try{
+        const response = await fetch(`${API}/${id}`, {
+            method: "DELETE",
+        })
+
+        if (!response.ok) {
+            throw new Error("failed to delete event")
+        }
+
+        render()
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+//function to parse date and time for display
+function parseDate(inputStr, expectedOutput) {
+    //inputStr in the format 2023-08-20T23:40:08.000Z
+    if (expectedOutput === 'date') {
+        return inputStr.slice(0, 10)
+    } else if (expectedOutput === 'time') {
+        return inputStr.slice(11, 19)
+    } else {
+        return 'invalid expected Output'
+    }
+}
+
+//function to format the input date and time into what the api accepts
 function formatDate(date, time) {
     return date + 'T' + time + ':00.000Z'
 }

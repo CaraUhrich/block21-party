@@ -42,7 +42,7 @@ function render () {
         const deleteBtn = document.createElement('button')
         deleteBtn.textContent = 'Delete'
         
-        deleteBtn.addEventListener('click', deleteEvent)
+        deleteBtn.addEventListener('click', () => deleteEvent(partyObj.id))
 
         artistEl.replaceChildren(name, date, time, location, description, deleteBtn)
 
@@ -76,21 +76,25 @@ function parseDate(inputStr, expectedOutput) {
     }
 }
 
-function deleteEvent(e) {
-    e.preventDefault()
-
-    const partyToDeleteName = e.target.parentElement.firstChild
-
-    const partyToDelete = state.parties.find((partyObj, index) => {
-        if (partyObj.name === partyToDeleteName.textContent){
-            state.parties.splice(index, 1)
-            return true
-        }
+async function deleteEvent(id) {
+    console.log(state.parties.length)
+    console.log(id)
+    try{
+        const response = await fetch(`${API}/${id}`, {
+            method: "DELETE",
         })
+        console.log(response)
 
-    console.log(partyToDelete)
+        if (!response.ok) {
+            throw new Error("failed to delete event")
+        }
 
-    render()
+        render()
+    } catch (error) {
+        console.log(error)
+    }
+
+    console.log(state.parties.length)
 }
 
 async function addEvent(e) {

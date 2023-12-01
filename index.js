@@ -9,17 +9,13 @@ const inputForm = document.querySelector('form')
 const API = 'https://fsa-crud-2aa9294fe819.herokuapp.com/api/2310-GHP-ET-WEB-FT-SF/events'
 
 //Function calls
-initRender()
+render()
 inputForm.addEventListener('submit', addEvent)
 
-// Inital render function to await getEvents before rendering
-async function initRender() {
-    await getEvents()
-    render()
-}
-
 // Render function to display party objects in ul
-function render () {
+async function render () {
+    await getEvents()
+    
     const partyEls = state.parties.map((partyObj) => {
         const artistEl = document.createElement('li')
 

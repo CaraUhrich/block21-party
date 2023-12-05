@@ -1,0 +1,56 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-rows: 45px 1fr 50px 2fr;
+    height: 100vh;
+    background-color: black;
+    color: white;
+}
+
+form {
+    margin: .5em 1em;
+}
+
+input {
+    margin: .25em;
+}
+
+button {
+    margin: .15em;
+    padding: .15em .45em;
+    background-color: darkgoldenrod;
+    color: white;
+    border-radius: .45em;
+}
+
+h2 {
+    text-align: center;
+    background-color: darkgoldenrod;
+    margin: 0 0 .15em;
+    padding: .15em;
+}
+
+h1 {
+    text-align: center;
+    background-color: darkgoldenrod;
+    margin: 0;
+    padding: .15em
+}
+
+h3 {
+    margin-top: .15em;
+}
+
+ul {
+    list-style-type: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75em;
+}
+
+li {
+    border: 2px solid darkgoldenrod;
+    border-radius: .75em;
+    padding: .75em;
+}

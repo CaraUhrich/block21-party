@@ -24,10 +24,10 @@ async function render () {
         name.textContent = partyObj.name
 
         const date = document.createElement('p')
-        date.textContent = `Date: ${parseDate(partyObj.date, 'date')}`
+        date.textContent = `Date: ${partyObj.date}`
         
         const time = document.createElement('p')
-        time.textContent = `Time: ${parseDate(partyObj.date, 'time')}`
+        time.textContent = `Time: ${partyObj.time}`
 
         const location = document.createElement('p')
         location.textContent = `Location: ${partyObj.location}`
@@ -40,7 +40,12 @@ async function render () {
         
         deleteBtn.addEventListener('click', () => deleteEvent(partyObj.id))
 
-        partyEl.replaceChildren(name, date, time, location, description, deleteBtn)
+        const updateBtn = document.createElement('button')
+        updateBtn.textContent = 'Update'
+        
+        updateBtn.addEventListener('click', () => updateEvent(partyObj.id))
+
+        partyEl.replaceChildren(name, date, time, location, description, updateBtn, deleteBtn)
 
         return partyEl
     })
@@ -55,6 +60,10 @@ async function getEvents() {
         const responseObj = await response.json()
 
         state.parties = responseObj.data
+        state.parties.forEach((partyObj) => {
+            partyObj.time = parseDate(partyObj.date, 'time')
+            partyObj.date = parseDate(partyObj.date, 'date')
+        })
     } catch (error) {
         console.log(error)
     }
@@ -63,7 +72,7 @@ async function getEvents() {
 async function addEvent(e) {
     e.preventDefault()
 
-    const date = formatDate(inputForm.dateInput.value, inputForm.time.value)
+    const date = formatDate(inputForm.date.value, inputForm.time.value)
 
     try {
         const response = await fetch(API, {
@@ -95,6 +104,40 @@ async function deleteEvent(id) {
 
         if (!response.ok) {
             throw new Error("failed to delete event")
+        }
+
+        render()
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+async function updateEvent(id) {
+    const party = state.parties.find((partyObj) => partyObj.id === id)
+    
+    for(let key in party) {
+        let property = inputForm[key]
+        if(!property) {
+            continue
+        }
+        property = property.value
+        if(property) {
+            party[key] = property
+        }
+    }
+
+    party.date = formatDate(party.date, party.time)
+    delete party.time
+
+    try {
+        const response = await fetch(`${API}/${id}`, {
+            method: 'Put',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(party)
+        })
+
+        if (!response.ok) {
+            throw new Error('Failed to update event')
         }
 
         render()
